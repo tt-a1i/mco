@@ -1,27 +1,27 @@
-# MCO Docs Index
+# MCO 文档索引
 
-English | [简体中文](./README.zh-CN.md)
+[English](./README.md) | 简体中文
 
-## Read First
+## 先读这些
 1. [multi-cli-orchestrator-proposal.md](./multi-cli-orchestrator-proposal.md)
 2. [capability-research.md](./capability-research.md)
 3. [notes.md](./notes.md)
 
-## Gate Artifacts
+## 门禁产物
 1. [capability-probe-spec.md](./capability-probe-spec.md)
 2. [adapter-contract-tests.md](./adapter-contract-tests.md)
 3. [dry-run-plan.md](./dry-run-plan.md)
 4. [implementation-gate-checklist.md](./implementation-gate-checklist.md)
 
-## Implementation Freeze
+## 接口冻结
 1. [docs/implementation/step0-interface-freeze.md](./docs/implementation/step0-interface-freeze.md)
 2. [docs/contracts/cli-json-v0.1.x.md](./docs/contracts/cli-json-v0.1.x.md)
 3. [docs/contracts/provider-permissions-v0.1.x.md](./docs/contracts/provider-permissions-v0.1.x.md)
 
-## Planning and Tracking
+## 计划与跟踪
 1. [task_plan.md](./task_plan.md)
 
-## Release Notes
+## 发布说明
 1. [docs/releases/v0.1.2.md](./docs/releases/v0.1.2.md)
 2. [docs/releases/v0.1.2.zh-CN.md](./docs/releases/v0.1.2.zh-CN.md)
 3. [docs/releases/v0.1.1.md](./docs/releases/v0.1.1.md)
@@ -29,21 +29,20 @@ English | [简体中文](./README.zh-CN.md)
 5. [docs/releases/v0.1.0.md](./docs/releases/v0.1.0.md)
 6. [docs/releases/v0.1.0.zh-CN.md](./docs/releases/v0.1.0.zh-CN.md)
 
-## Unified CLI (Step 2)
-`mco review` is the unified entrypoint for running a review task.
+## 统一 CLI（Step 2）
+`mco review`：统一的审查入口。  
+`mco run`：通用任务执行入口（不强制 findings schema）。
 
-`mco run` is the generalized execution entrypoint for agent-style task orchestration (no forced findings schema).
+## 安装
 
-## Installation
-
-Python package (recommended):
+Python 包（推荐）：
 
 ```bash
 pipx install mco
 mco --help
 ```
 
-Install from source (editable):
+源码可编辑安装：
 
 ```bash
 git clone https://github.com/tt-a1i/mco.git
@@ -52,14 +51,15 @@ python3 -m pip install -e .
 mco --help
 ```
 
-NPM wrapper (Python 3 required on PATH):
+npm 包装器（系统需有 Python 3）：
 
 ```bash
 npm i -g @tt-a1i/mco
 mco --help
 ```
 
-Quick start:
+快速开始：
+
 ```bash
 ./mco review \
   --repo . \
@@ -67,22 +67,26 @@ Quick start:
   --providers claude,codex
 ```
 
-Machine-readable output:
+机器可读输出：
+
 ```bash
 ./mco review --repo . --prompt "Review for bugs." --providers claude,codex --json
 ```
 
-Stdout-only result mode (for caller rendering, no `summary.md/decision.md/findings.json/run.json` write):
+仅 stdout 输出结果（不写 `summary.md/decision.md/findings.json/run.json`）：
+
 ```bash
 ./mco review --repo . --prompt "Review for bugs." --providers claude,codex --result-mode stdout --json
 ```
 
-General run mode:
+通用 run 模式：
+
 ```bash
 ./mco run --repo . --prompt "Summarize the current repo architecture." --providers claude,codex --json
 ```
 
-Config file (JSON):
+配置文件（JSON）：
+
 ```json
 {
   "providers": ["claude", "codex"],
@@ -117,12 +121,14 @@ Config file (JSON):
 }
 ```
 
-Run with config:
+按配置运行：
+
 ```bash
 ./mco review --config ./mco.example.json --repo . --prompt "Review for bugs and security issues."
 ```
 
-Override fan-out and per-provider timeout from CLI:
+CLI 覆盖并发与超时：
+
 ```bash
 ./mco review \
   --repo . \
@@ -135,7 +141,8 @@ Override fan-out and per-provider timeout from CLI:
   --provider-timeouts qwen=900,codex=900
 ```
 
-Run mode with hard path constraints:
+带路径硬约束的 run 模式：
+
 ```bash
 ./mco run \
   --repo . \
@@ -148,7 +155,7 @@ Run mode with hard path constraints:
   --json
 ```
 
-Artifacts are written to:
+产物目录：
 - `<artifact_base>/<task_id>/summary.md`
 - `<artifact_base>/<task_id>/decision.md`
 - `<artifact_base>/<task_id>/findings.json`
@@ -156,36 +163,36 @@ Artifacts are written to:
 - `<artifact_base>/<task_id>/providers/*.json`
 - `<artifact_base>/<task_id>/raw/*.log`
 
-`run.json` includes audit fields for reproducibility:
+`run.json` 审计字段：
 - `effective_cwd`
 - `allow_paths_hash`
 - `permissions_hash`
 
-Notes:
-- YAML config requires `pyyaml` installed; otherwise use JSON config.
-- Review prompt is wrapped with a JSON finding contract, but strict parse enforcement is optional.
-- Enable strict gate behavior with `--strict-contract` (or `policy.enforce_findings_contract=true` in config).
-- `run` mode does not force findings schema; it focuses on execution aggregation and provider success.
-- `result_mode=artifact` (default): write user-facing artifacts and print compact result.
-- `result_mode=stdout`: print provider-level result payload to stdout, skip user-facing artifact files.
-- `result_mode=both`: write artifacts and print provider-level payload.
-- Execution model is `wait-all`: one provider timeout/failure does not stop others.
-- Timeout behavior is progress-driven:
-  - `stall_timeout_seconds`: cancel only when output progress is idle beyond threshold.
-  - `review_hard_timeout_seconds`: hard deadline applied only in `review` mode.
-- `max_provider_parallelism=0` (or omitted) means full parallelism across selected providers.
-- `provider_timeouts` are provider-specific stall-timeout overrides.
-- `allow_paths` and `target_paths` are validated against `repo_root`; path escape is rejected.
-- `enforcement_mode=strict` (default) fails closed when provider permission requirements cannot be honored.
+说明：
+- YAML 配置需要 `pyyaml`；否则使用 JSON 配置。
+- review 提示词会附加 JSON finding 合同；是否强制由策略控制。
+- 可用 `--strict-contract`（或配置 `policy.enforce_findings_contract=true`）开启严格合同。
+- `run` 模式不强制 findings schema，聚焦执行与聚合。
+- `result_mode=artifact`（默认）：写产物并输出简报。
+- `result_mode=stdout`：输出 provider 结果，不写用户侧产物。
+- `result_mode=both`：既写产物又输出 provider 结果。
+- 执行模型为 `wait-all`：单 provider 失败/超时不会中断其它 provider。
+- 超时是进度驱动：
+  - `stall_timeout_seconds`：仅在长时间无输出进展时取消。
+  - `review_hard_timeout_seconds`：仅 `review` 模式硬截止。
+- `max_provider_parallelism=0`（或省略）表示全并行。
+- `provider_timeouts` 为 provider 级 stall-timeout 覆盖项。
+- `allow_paths` 与 `target_paths` 会对 `repo_root` 做越界校验。
+- `enforcement_mode=strict`（默认）下，权限要求不满足会 fail-closed。
 
-## Step5 Benchmark Script
-Use this script to generate serial vs full-parallel evidence and write reports under `reports/adapter-contract/<date>/`:
+## Step5 性能脚本
+用于产出串行 vs 全并行对比报告（写入 `reports/adapter-contract/<date>/`）：
 
 ```bash
 ./scripts/run_step5_parallel_benchmark.sh
 ```
 
-The generated summary JSON includes separated parse-vs-findings metrics:
+生成的 summary JSON 包含：
 - `providers_total`
 - `parse_success_rate`
 - `effective_findings_count`

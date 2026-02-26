@@ -39,7 +39,7 @@ jobs:
       contents: read
     environment:
       name: pypi
-      url: https://pypi.org/p/multi-cli-orchestrator
+      url: https://pypi.org/p/mco
     steps:
       - name: Download dist artifact
         uses: actions/download-artifact@v4
@@ -49,4 +49,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-

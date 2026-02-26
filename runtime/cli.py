@@ -200,7 +200,7 @@ def _add_common_execution_args(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="mco", description="Multi-CLI Orchestrator")
+    parser = argparse.ArgumentParser(prog="mco", description="MCO")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run = subparsers.add_parser("run", help="Run general multi-provider task execution")

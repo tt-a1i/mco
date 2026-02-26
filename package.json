@@ -1,5 +1,5 @@
 {
-  "name": "@multi-cli-orchestrator/cli",
+  "name": "@tt-a1i/mco",
   "version": "0.1.2",
   "description": "Node wrapper for the mco CLI (Python runtime required).",
   "license": "UNLICENSED",
@@ -19,4 +19,3 @@
     "runtime"
   ]
 }
-

@@ -1,4 +1,4 @@
-# Multi-CLI Orchestrator Docs Index
+# MCO Docs Index
 
 ## Read First
 1. [multi-cli-orchestrator-proposal.md](./multi-cli-orchestrator-proposal.md)
@@ -37,15 +37,15 @@
 Python package (recommended):
 
 ```bash
-pipx install multi-cli-orchestrator
+pipx install mco
 mco --help
 ```
 
 Install from source (editable):
 
 ```bash
-git clone https://github.com/tsk/multi-cli-orchestrator.git
-cd multi-cli-orchestrator
+git clone https://github.com/tt-a1i/mco.git
+cd mco
 python3 -m pip install -e .
 mco --help
 ```
@@ -53,7 +53,7 @@ mco --help
 NPM wrapper (Python 3 required on PATH):
 
 ```bash
-npm i -g @multi-cli-orchestrator/cli
+npm i -g @tt-a1i/mco
 mco --help
 ```
 

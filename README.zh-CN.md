@@ -1,197 +1,180 @@
-# MCO 文档索引
+# MCO
+
+**MCO — 一条提示词，五个 AI Agent，一份结果。**
 
 [English](./README.md) | 简体中文
 
-## 先读这些
-1. [multi-cli-orchestrator-proposal.md](./multi-cli-orchestrator-proposal.md)
-2. [capability-research.md](./capability-research.md)
-3. [notes.md](./notes.md)
+## MCO 是什么
 
-## 门禁产物
-1. [capability-probe-spec.md](./capability-probe-spec.md)
-2. [adapter-contract-tests.md](./adapter-contract-tests.md)
-3. [dry-run-plan.md](./dry-run-plan.md)
-4. [implementation-gate-checklist.md](./implementation-gate-checklist.md)
+MCO（Multi-CLI Orchestrator）是一个中立的编排层，将单条提示词并行分发给多个 AI 编程 Agent，汇总执行结果。不绑定任何厂商，不改变你的工作流。Fan-out、Wait-all、Collect。
 
-## 接口冻结
-1. [docs/implementation/step0-interface-freeze.md](./docs/implementation/step0-interface-freeze.md)
-2. [docs/contracts/cli-json-v0.1.x.md](./docs/contracts/cli-json-v0.1.x.md)
-3. [docs/contracts/provider-permissions-v0.1.x.md](./docs/contracts/provider-permissions-v0.1.x.md)
+你继续照常使用 Claude Code、Codex CLI、Gemini CLI、OpenCode、Qwen Code。MCO 负责把它们串联成统一的执行管线，提供结构化输出、进度驱动超时、可复现的产物。
 
-## 计划与跟踪
-1. [task_plan.md](./task_plan.md)
+## 核心特性
 
-## 发布说明
-1. [CHANGELOG.md](./CHANGELOG.md)
-2. [docs/releases/v0.1.2.md](./docs/releases/v0.1.2.md)
-3. [docs/releases/v0.1.2.zh-CN.md](./docs/releases/v0.1.2.zh-CN.md)
-4. [docs/releases/v0.1.1.md](./docs/releases/v0.1.1.md)
-5. [docs/releases/v0.1.1.zh-CN.md](./docs/releases/v0.1.1.zh-CN.md)
-6. [docs/releases/v0.1.0.md](./docs/releases/v0.1.0.md)
-7. [docs/releases/v0.1.0.zh-CN.md](./docs/releases/v0.1.0.zh-CN.md)
+- **并行扇出** — 同时分发到所有 provider，wait-all 语义
+- **进度驱动超时** — agent 自由跑完，仅在长时间无输出时取消
+- **双模式** — `mco review` 结构化代码审查，`mco run` 通用任务执行
+- **厂商中立** — 5 个 CLI 工具统一适配器契约，不偏向任何厂商
+- **机器可读输出** — JSON 结果 + 每个 provider 独立产物树，便于下游自动化
 
-## 统一 CLI（Step 2）
-`mco review`：统一的审查入口。  
-`mco run`：通用任务执行入口（不强制 findings schema）。
+## 支持的 Provider
 
-## 安装
+| Provider | CLI | 状态 |
+|----------|-----|------|
+| Claude Code | `claude` | 已支持 |
+| Codex CLI | `codex` | 已支持 |
+| Gemini CLI | `gemini` | 已支持 |
+| OpenCode | `opencode` | 已支持 |
+| Qwen Code | `qwen` | 已支持 |
 
-npm 包装器（当前可用，系统需有 Python 3）：
+无需迁移项目，无需重学命令，无需绑定单一工具。
+
+## 快速开始
+
+通过 npm 安装（需要系统有 Python 3）：
 
 ```bash
 npm i -g @tt-a1i/mco
-mco --help
 ```
 
-源码可编辑安装：
+或从源码安装：
 
 ```bash
 git clone https://github.com/tt-a1i/mco.git
 cd mco
 python3 -m pip install -e .
-mco --help
 ```
 
-Python 包（PyPI）：
-- 目前尚未发布。
-- 发布流程已就绪，待完成 PyPI Trusted Publisher 配置后开启。
-
-快速开始：
+运行第一次多 Agent 审查：
 
 ```bash
-./mco review \
+mco review \
   --repo . \
   --prompt "Review this repository for high-risk bugs and security issues." \
-  --providers claude,codex
+  --providers claude,codex,qwen
 ```
 
-机器可读输出：
+## 使用方式
+
+### Review 模式
+
+结构化代码审查，输出标准化的 findings（含严重级别、分类、证据、建议）。
 
 ```bash
-./mco review --repo . --prompt "Review for bugs." --providers claude,codex --json
+mco review \
+  --repo . \
+  --prompt "Review for security vulnerabilities and performance issues." \
+  --providers claude,codex,gemini,opencode,qwen \
+  --json
 ```
 
-仅 stdout 输出结果（不写 `summary.md/decision.md/findings.json/run.json`）：
+### Run 模式
+
+通用多 Agent 任务执行，不强制输出格式，provider 自由完成任务。
 
 ```bash
-./mco review --repo . --prompt "Review for bugs." --providers claude,codex --result-mode stdout --json
+mco run \
+  --repo . \
+  --prompt "Summarize the architecture of this project." \
+  --providers claude,codex \
+  --json
 ```
 
-通用 run 模式：
+### 结果模式
+
+| 模式 | 行为 |
+|------|------|
+| `--result-mode artifact` | 写产物文件，输出摘要（默认） |
+| `--result-mode stdout` | 完整结果输出到 stdout，不写产物文件 |
+| `--result-mode both` | 既写产物又输出完整结果 |
+
+### 路径约束
+
+限制 agent 可访问的文件范围：
 
 ```bash
-./mco run --repo . --prompt "Summarize the current repo architecture." --providers claude,codex --json
+mco run \
+  --repo . \
+  --prompt "Analyze the adapter layer." \
+  --providers claude,codex \
+  --allow-paths runtime,scripts \
+  --target-paths runtime/adapters \
+  --enforcement-mode strict
 ```
 
-配置文件（JSON）：
+## 配置
+
+在项目根目录创建 `mco.json`：
 
 ```json
 {
-  "providers": ["claude", "codex"],
+  "providers": ["claude", "codex", "qwen"],
   "artifact_base": "reports/review",
   "state_file": ".mco/state.json",
   "policy": {
-    "timeout_seconds": 180,
     "stall_timeout_seconds": 900,
-    "poll_interval_seconds": 1.0,
     "review_hard_timeout_seconds": 1800,
-    "enforce_findings_contract": false,
-    "max_retries": 1,
-    "high_escalation_threshold": 1,
-    "require_non_empty_findings": true,
     "max_provider_parallelism": 0,
-    "allow_paths": [".", "runtime", "scripts"],
     "enforcement_mode": "strict",
     "provider_permissions": {
-      "claude": {
-        "permission_mode": "plan"
-      },
-      "codex": {
-        "sandbox": "workspace-write"
-      }
-    },
-    "provider_timeouts": {
-      "claude": 300,
-      "codex": 240,
-      "qwen": 240
+      "claude": { "permission_mode": "plan" },
+      "codex": { "sandbox": "workspace-write" }
     }
   }
 }
 ```
 
-按配置运行：
-
 ```bash
-./mco review --config ./mco.example.json --repo . --prompt "Review for bugs and security issues."
+mco review --config mco.json --repo . --prompt "Review for bugs."
 ```
 
-CLI 覆盖并发与超时：
+### 关键策略字段
 
-```bash
-./mco review \
-  --repo . \
-  --prompt "Review for bugs and security issues." \
-  --providers claude,codex,gemini,opencode,qwen \
-  --strict-contract \
-  --max-provider-parallelism 2 \
-  --stall-timeout 900 \
-  --review-hard-timeout 1800 \
-  --provider-timeouts qwen=900,codex=900
+| 字段 | 默认值 | 说明 |
+|------|--------|------|
+| `stall_timeout_seconds` | 900 | 无输出进展超过此时间才取消 |
+| `review_hard_timeout_seconds` | 1800 | review 模式硬截止（0 = 禁用） |
+| `max_provider_parallelism` | 0 | 0 = 全部 provider 并行 |
+| `enforcement_mode` | `strict` | strict 模式下权限不满足则 fail-closed |
+| `provider_timeouts` | `{}` | 各 provider 独立的 stall timeout 覆盖 |
+
+所有 CLI 参数优先于配置文件。运行 `mco review --help` 查看完整参数列表。
+
+## 工作原理
+
+```
+prompt ─> MCO ─┬─> Claude Code  ─┐
+               ├─> Codex CLI     ├─> 聚合 ─> 产物 + JSON
+               ├─> Gemini CLI    │
+               ├─> OpenCode      │
+               └─> Qwen Code   ──┘
 ```
 
-带路径硬约束的 run 模式：
+每个 provider 通过统一的适配器契约作为独立子进程运行：
 
-```bash
-./mco run \
-  --repo . \
-  --prompt "Compare adapter behaviors and return a short markdown summary." \
-  --providers claude,codex \
-  --allow-paths runtime,scripts \
-  --target-paths runtime/adapters,runtime/review_engine.py \
-  --enforcement-mode strict \
-  --provider-permissions-json '{"codex":{"sandbox":"workspace-write"},"claude":{"permission_mode":"plan"}}' \
-  --json
+1. **Detect** — 检测二进制文件和认证状态
+2. **Run** — 启动 CLI 进程，传入提示词，捕获 stdout/stderr
+3. **Poll** — 监控进程状态 + 输出字节增长，判断活跃度
+4. **Cancel** — stall timeout 或硬截止时 SIGTERM/SIGKILL
+5. **Normalize** — 从原始输出中提取结构化 findings
+
+执行模型是 **wait-all**：单个 provider 超时或失败不会中断其他 provider。
+
+## 产物结构
+
+每次执行生成结构化产物树：
+
+```
+reports/review/<task_id>/
+  summary.md          # 人类可读摘要
+  decision.md         # PASS / FAIL / ESCALATE / PARTIAL
+  findings.json       # 聚合后的标准化 findings（review 模式）
+  run.json            # 机器可读执行元数据
+  providers/          # 各 provider 结果 JSON
+  raw/                # 原始 stdout/stderr 日志
 ```
 
-产物目录：
-- `<artifact_base>/<task_id>/summary.md`
-- `<artifact_base>/<task_id>/decision.md`
-- `<artifact_base>/<task_id>/findings.json`
-- `<artifact_base>/<task_id>/run.json`
-- `<artifact_base>/<task_id>/providers/*.json`
-- `<artifact_base>/<task_id>/raw/*.log`
+## 许可证
 
-`run.json` 审计字段：
-- `effective_cwd`
-- `allow_paths_hash`
-- `permissions_hash`
-
-说明：
-- YAML 配置需要 `pyyaml`；否则使用 JSON 配置。
-- review 提示词会附加 JSON finding 合同；是否强制由策略控制。
-- 可用 `--strict-contract`（或配置 `policy.enforce_findings_contract=true`）开启严格合同。
-- `run` 模式不强制 findings schema，聚焦执行与聚合。
-- `result_mode=artifact`（默认）：写产物并输出简报。
-- `result_mode=stdout`：输出 provider 结果，不写用户侧产物。
-- `result_mode=both`：既写产物又输出 provider 结果。
-- 执行模型为 `wait-all`：单 provider 失败/超时不会中断其它 provider。
-- 超时是进度驱动：
-  - `stall_timeout_seconds`：仅在长时间无输出进展时取消。
-  - `review_hard_timeout_seconds`：仅 `review` 模式硬截止。
-- `max_provider_parallelism=0`（或省略）表示全并行。
-- `provider_timeouts` 为 provider 级 stall-timeout 覆盖项。
-- `allow_paths` 与 `target_paths` 会对 `repo_root` 做越界校验。
-- `enforcement_mode=strict`（默认）下，权限要求不满足会 fail-closed。
-
-## Step5 性能脚本
-用于产出串行 vs 全并行对比报告（写入 `reports/adapter-contract/<date>/`）：
-
-```bash
-./scripts/run_step5_parallel_benchmark.sh
-```
-
-生成的 summary JSON 包含：
-- `providers_total`
-- `parse_success_rate`
-- `effective_findings_count`
-- `zero_finding_provider_count`
+UNLICENSED

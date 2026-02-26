@@ -45,7 +45,7 @@ npm i -g @tt-a1i/mco
 或从源码安装：
 
 ```bash
-git clone https://github.com/tt-a1i/mco.git
+git clone https://github.com/mco-org/mco.git
 cd mco
 python3 -m pip install -e .
 ```

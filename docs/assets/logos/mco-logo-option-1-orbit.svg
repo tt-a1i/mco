@@ -1,0 +1,19 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="320" fill="transparent"/>
+  <circle cx="160" cy="160" r="84" stroke="url(#g1)" stroke-width="10"/>
+  <circle cx="160" cy="160" r="12" fill="#111827"/>
+  <circle cx="80" cy="160" r="12" fill="#0EA5E9"/>
+  <circle cx="160" cy="80" r="12" fill="#14B8A6"/>
+  <circle cx="240" cy="160" r="12" fill="#22C55E"/>
+  <circle cx="160" cy="240" r="12" fill="#38BDF8"/>
+  <path d="M80 160H240" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>
+  <path d="M160 80V240" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>
+  <text x="320" y="155" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="800" fill="#0F172A">MCO</text>
+  <text x="324" y="205" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#475569">Multi-CLI Orchestrator</text>
+</svg>

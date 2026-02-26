@@ -1,0 +1,14 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#0891B2"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="320" fill="transparent"/>
+  <path d="M160 54L246 92V155C246 219 208 263 160 282C112 263 74 219 74 155V92L160 54Z" fill="url(#g2)"/>
+  <path d="M160 92L210 114V152C210 199 184 233 160 248C136 233 110 199 110 152V114L160 92Z" fill="#E0F2FE"/>
+  <path d="M128 162L148 182L192 138" stroke="#0F172A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="320" y="155" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="800" fill="#0F172A">MCO</text>
+  <text x="324" y="205" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#334155">Reliable Agent Orchestration</text>
+</svg>

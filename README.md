@@ -1,5 +1,9 @@
 # MCO
 
+<p align="left">
+  <img src="./docs/assets/logos/mco-logo.svg" alt="MCO Logo" width="520" />
+</p>
+
 **MCO — One Prompt. Five AI Agents. One Result.**
 
 English | [简体中文](./README.zh-CN.md)

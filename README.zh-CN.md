@@ -1,5 +1,9 @@
 # MCO
 
+<p align="left">
+  <img src="./docs/assets/logos/mco-logo.svg" alt="MCO Logo" width="520" />
+</p>
+
 **MCO — 一条提示词，五个 AI Agent，一份结果。**
 
 [English](./README.md) | 简体中文

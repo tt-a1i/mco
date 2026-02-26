@@ -1,0 +1,18 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" fill="transparent"/>
+  <path d="M160 56L246 106V206L160 256L74 206V106L160 56Z" stroke="url(#g5)" stroke-width="10" fill="none"/>
+  <circle cx="160" cy="160" r="16" fill="#0F172A"/>
+  <circle cx="110" cy="128" r="10" fill="#38BDF8"/>
+  <circle cx="210" cy="128" r="10" fill="#22C55E"/>
+  <circle cx="110" cy="192" r="10" fill="#22C55E"/>
+  <circle cx="210" cy="192" r="10" fill="#38BDF8"/>
+  <path d="M160 160L110 128M160 160L210 128M160 160L110 192M160 160L210 192" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
+  <text x="320" y="154" font-family="Segoe UI, Arial, sans-serif" font-size="94" font-weight="800" fill="#0F172A">MCO</text>
+  <text x="324" y="204" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#475569">Distributed Agent Mesh</text>
+</svg>

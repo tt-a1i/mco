@@ -1,0 +1,16 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g6" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" fill="transparent"/>
+  <path d="M60 160C90 120 120 120 150 160C180 200 210 200 240 160C270 120 300 120 330 160" stroke="url(#g6)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="60" cy="160" r="10" fill="#0EA5E9"/>
+  <circle cx="150" cy="160" r="10" fill="#22C55E"/>
+  <circle cx="240" cy="160" r="10" fill="#0EA5E9"/>
+  <circle cx="330" cy="160" r="10" fill="#22C55E"/>
+  <text x="380" y="154" font-family="Segoe UI, Arial, sans-serif" font-size="94" font-weight="800" fill="#0F172A">MCO</text>
+  <text x="384" y="204" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#334155">Prompt In. Signal Out.</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g8" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" fill="transparent"/>
+  <rect x="72" y="76" width="12" height="168" rx="6" fill="#0F172A"/>
+  <rect x="96" y="76" width="12" height="168" rx="6" fill="url(#g8)"/>
+  <rect x="120" y="76" width="12" height="168" rx="6" fill="#0F172A"/>
+  <text x="170" y="156" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="800" fill="#0F172A">MCO</text>
+  <text x="174" y="206" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#334155">Multi-CLI Orchestrator</text>
+  <path d="M72 260H560" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+</svg>

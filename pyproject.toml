@@ -26,9 +26,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/tt-a1i/mco"
-Repository = "https://github.com/tt-a1i/mco"
-Issues = "https://github.com/tt-a1i/mco/issues"
+Homepage = "https://github.com/mco-org/mco"
+Repository = "https://github.com/mco-org/mco"
+Issues = "https://github.com/mco-org/mco/issues"
 
 [project.scripts]
 mco = "runtime.cli:main"

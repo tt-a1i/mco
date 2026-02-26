@@ -1,24 +1,26 @@
 # MCO
 
-**MCO — One Prompt. Five AI Agents. One Result.**
+**MCO — Orchestrate AI Coding Agents. Any Prompt. Any Agent. Any IDE.**
 
 English | [简体中文](./README.zh-CN.md)
 
 ## What is MCO
 
-MCO (Multi-CLI Orchestrator) is a neutral orchestration layer that dispatches a single prompt to multiple AI coding agents in parallel and aggregates their results. No vendor lock-in. No workflow rewrite. Just fan-out, wait-all, and collect.
+MCO (Multi-CLI Orchestrator) is a neutral orchestration layer for AI coding agents. It dispatches prompts to multiple agent CLIs in parallel, aggregates results, and produces structured artifacts. No vendor lock-in. No workflow rewrite.
 
-You keep using Claude Code, Codex CLI, Gemini CLI, OpenCode, and Qwen Code as they are. MCO wires them into a unified execution pipeline with structured output, progress-driven timeouts, and reproducible artifacts.
+MCO is designed to be called by an orchestrating agent — from Claude Code, Cursor, Trae, Copilot, Windsurf, or any AI-powered IDE. The calling agent organizes context, assigns tasks, and uses MCO to fan out work across multiple agents simultaneously. Agents can also orchestrate each other: Claude Code can dispatch tasks to Codex and Gemini via MCO, and vice versa.
 
 ## Key Highlights
 
-- **Parallel fan-out** — dispatch to all providers simultaneously, wait-all semantics
+- **Parallel fan-out** — dispatch to multiple agents simultaneously, wait-all semantics
+- **Any IDE, any agent** — works from Claude Code, Cursor, Trae, Copilot, Windsurf, or plain shell
+- **Agent-to-agent orchestration** — agents can dispatch tasks to other agents through MCO
 - **Progress-driven timeouts** — agents run freely until completion; cancel only when output goes idle
 - **Dual mode** — `mco review` for structured code review findings, `mco run` for general task execution
-- **Provider-neutral** — uniform adapter contract across 5 CLI tools, no favoring any vendor
+- **Extensible adapter contract** — uniform interface for any CLI agent, not limited to built-in providers
 - **Machine-readable output** — JSON result payloads and per-provider artifact trees for downstream automation
 
-## Supported Providers
+## Built-in Providers
 
 | Provider | CLI | Status |
 |----------|-----|--------|
@@ -28,7 +30,7 @@ You keep using Claude Code, Codex CLI, Gemini CLI, OpenCode, and Qwen Code as th
 | OpenCode | `opencode` | Supported |
 | Qwen Code | `qwen` | Supported |
 
-No project migration. No command relearning. No single-tool lock-in.
+The adapter architecture is extensible — adding a new agent CLI requires implementing three hooks: auth check, command builder, and output normalizer.
 
 ## Quick Start
 
@@ -156,12 +158,19 @@ Run `mco review --help` for the full flag list.
 ## How It Works
 
 ```
-prompt ─> MCO ─┬─> Claude Code  ─┐
-               ├─> Codex CLI     ├─> aggregate ─> artifacts + JSON
-               ├─> Gemini CLI    │
-               ├─> OpenCode      │
-               └─> Qwen Code   ──┘
+Cursor / Trae / Copilot / Claude Code / shell
+         │
+         ▼
+      mco run / mco review
+         │
+         ├─> Claude Code  ─┐
+         ├─> Codex CLI     ├─> aggregate ─> artifacts + JSON
+         ├─> Gemini CLI    │
+         ├─> OpenCode      │
+         └─> Qwen Code   ──┘
 ```
+
+The calling agent (or user) invokes `mco` with a prompt and a list of providers. MCO fans out to all selected agents in parallel and waits for all to finish.
 
 Each provider runs as an independent subprocess through a uniform adapter contract:
 

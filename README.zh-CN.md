@@ -1,24 +1,26 @@
 # MCO
 
-**MCO — 一条提示词，五个 AI Agent，一份结果。**
+**MCO — 编排 AI 编程 Agent。任意提示词，任意 Agent，任意 IDE。**
 
 [English](./README.md) | 简体中文
 
 ## MCO 是什么
 
-MCO（Multi-CLI Orchestrator）是一个中立的编排层，将单条提示词并行分发给多个 AI 编程 Agent，汇总执行结果。不绑定任何厂商，不改变你的工作流。Fan-out、Wait-all、Collect。
+MCO（Multi-CLI Orchestrator）是一个中立的 AI 编程 Agent 编排层。它将提示词并行分发给多个 Agent CLI，汇总执行结果，生成结构化产物。不绑定任何厂商，不改变你的工作流。
 
-你继续照常使用 Claude Code、Codex CLI、Gemini CLI、OpenCode、Qwen Code。MCO 负责把它们串联成统一的执行管线，提供结构化输出、进度驱动超时、可复现的产物。
+MCO 设计为被调用方 Agent 驱动 — 来自 Claude Code、Cursor、Trae、Copilot、Windsurf 或任何 AI IDE。调用方 Agent 自行组织上下文、分配任务，通过 MCO 将工作并行扇出到多个 Agent。Agent 之间也可以互相调度：Claude Code 可以通过 MCO 分发任务给 Codex 和 Gemini，反之亦然。
 
 ## 核心特性
 
-- **并行扇出** — 同时分发到所有 provider，wait-all 语义
-- **进度驱动超时** — agent 自由跑完，仅在长时间无输出时取消
+- **并行扇出** — 同时分发到多个 Agent，wait-all 语义
+- **任意 IDE，任意 Agent** — 在 Claude Code、Cursor、Trae、Copilot、Windsurf 或命令行中使用
+- **Agent 互相调度** — Agent 之间可以通过 MCO 互相分发任务
+- **进度驱动超时** — Agent 自由跑完，仅在长时间无输出时取消
 - **双模式** — `mco review` 结构化代码审查，`mco run` 通用任务执行
-- **厂商中立** — 5 个 CLI 工具统一适配器契约，不偏向任何厂商
+- **可扩展适配器** — 统一接口适配任意 CLI Agent，不限于内置 provider
 - **机器可读输出** — JSON 结果 + 每个 provider 独立产物树，便于下游自动化
 
-## 支持的 Provider
+## 内置 Provider
 
 | Provider | CLI | 状态 |
 |----------|-----|------|
@@ -28,7 +30,7 @@ MCO（Multi-CLI Orchestrator）是一个中立的编排层，将单条提示词�
 | OpenCode | `opencode` | 已支持 |
 | Qwen Code | `qwen` | 已支持 |
 
-无需迁移项目，无需重学命令，无需绑定单一工具。
+适配器架构可扩展 — 添加新的 Agent CLI 只需实现三个钩子：认证检查、命令构建、输出标准化。
 
 ## 快速开始
 
@@ -156,12 +158,19 @@ mco review \
 ## 工作原理
 
 ```
-prompt ─> MCO ─┬─> Claude Code  ─┐
-               ├─> Codex CLI     ├─> 聚合 ─> 产物 + JSON
-               ├─> Gemini CLI    │
-               ├─> OpenCode      │
-               └─> Qwen Code   ──┘
+Cursor / Trae / Copilot / Claude Code / 命令行
+         │
+         ▼
+      mco run / mco review
+         │
+         ├─> Claude Code  ─┐
+         ├─> Codex CLI     ├─> 聚合 ─> 产物 + JSON
+         ├─> Gemini CLI    │
+         ├─> OpenCode      │
+         └─> Qwen Code   ──┘
 ```
+
+调用方 Agent（或用户）传入提示词和 provider 列表调用 `mco`，MCO 并行扇出到所有选中的 Agent，等待全部完成。
 
 每个 provider 通过统一的适配器契约作为独立子进程运行：
 

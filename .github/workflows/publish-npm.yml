@@ -21,15 +21,19 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Check npm token
+        id: npm_token
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
             echo "NPM_TOKEN is not configured; skipping npm publish."
-            exit 0
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish package
+        if: ${{ steps.npm_token.outputs.has_token == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |

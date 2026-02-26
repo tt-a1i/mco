@@ -1,190 +1,180 @@
-# MCO Docs Index
+# MCO
+
+**MCO — One Prompt. Five AI Agents. One Result.**
 
 English | [简体中文](./README.zh-CN.md)
 
-## Read First
-1. [multi-cli-orchestrator-proposal.md](./multi-cli-orchestrator-proposal.md)
-2. [capability-research.md](./capability-research.md)
-3. [notes.md](./notes.md)
+## What is MCO
 
-## Gate Artifacts
-1. [capability-probe-spec.md](./capability-probe-spec.md)
-2. [adapter-contract-tests.md](./adapter-contract-tests.md)
-3. [dry-run-plan.md](./dry-run-plan.md)
-4. [implementation-gate-checklist.md](./implementation-gate-checklist.md)
+MCO (Multi-CLI Orchestrator) is a neutral orchestration layer that dispatches a single prompt to multiple AI coding agents in parallel and aggregates their results. No vendor lock-in. No workflow rewrite. Just fan-out, wait-all, and collect.
 
-## Implementation Freeze
-1. [docs/implementation/step0-interface-freeze.md](./docs/implementation/step0-interface-freeze.md)
-2. [docs/contracts/cli-json-v0.1.x.md](./docs/contracts/cli-json-v0.1.x.md)
-3. [docs/contracts/provider-permissions-v0.1.x.md](./docs/contracts/provider-permissions-v0.1.x.md)
+You keep using Claude Code, Codex CLI, Gemini CLI, OpenCode, and Qwen Code as they are. MCO wires them into a unified execution pipeline with structured output, progress-driven timeouts, and reproducible artifacts.
 
-## Planning and Tracking
-1. [task_plan.md](./task_plan.md)
+## Key Highlights
 
-## Release Notes
-1. [CHANGELOG.md](./CHANGELOG.md)
-2. [docs/releases/v0.1.2.md](./docs/releases/v0.1.2.md)
-3. [docs/releases/v0.1.2.zh-CN.md](./docs/releases/v0.1.2.zh-CN.md)
-4. [docs/releases/v0.1.1.md](./docs/releases/v0.1.1.md)
-5. [docs/releases/v0.1.1.zh-CN.md](./docs/releases/v0.1.1.zh-CN.md)
-6. [docs/releases/v0.1.0.md](./docs/releases/v0.1.0.md)
-7. [docs/releases/v0.1.0.zh-CN.md](./docs/releases/v0.1.0.zh-CN.md)
+- **Parallel fan-out** — dispatch to all providers simultaneously, wait-all semantics
+- **Progress-driven timeouts** — agents run freely until completion; cancel only when output goes idle
+- **Dual mode** — `mco review` for structured code review findings, `mco run` for general task execution
+- **Provider-neutral** — uniform adapter contract across 5 CLI tools, no favoring any vendor
+- **Machine-readable output** — JSON result payloads and per-provider artifact trees for downstream automation
 
-## Unified CLI (Step 2)
-`mco review` is the unified entrypoint for running a review task.
+## Supported Providers
 
-`mco run` is the generalized execution entrypoint for agent-style task orchestration (no forced findings schema).
+| Provider | CLI | Status |
+|----------|-----|--------|
+| Claude Code | `claude` | Supported |
+| Codex CLI | `codex` | Supported |
+| Gemini CLI | `gemini` | Supported |
+| OpenCode | `opencode` | Supported |
+| Qwen Code | `qwen` | Supported |
 
-## Installation
+No project migration. No command relearning. No single-tool lock-in.
 
-NPM wrapper (available now, Python 3 required on PATH):
+## Quick Start
+
+Install via npm (Python 3 required on PATH):
 
 ```bash
 npm i -g @tt-a1i/mco
-mco --help
 ```
 
-Install from source (editable):
+Or install from source:
 
 ```bash
 git clone https://github.com/tt-a1i/mco.git
 cd mco
 python3 -m pip install -e .
-mco --help
 ```
 
-Python package via PyPI:
-- Not published yet.
-- Publish workflow is ready and will be enabled after PyPI Trusted Publisher setup.
+Run your first multi-agent review:
 
-Quick start:
 ```bash
-./mco review \
+mco review \
   --repo . \
   --prompt "Review this repository for high-risk bugs and security issues." \
-  --providers claude,codex
+  --providers claude,codex,qwen
 ```
 
-Machine-readable output:
+## Usage
+
+### Review Mode
+
+Structured code review with findings schema. Each provider returns normalized findings with severity, category, evidence, and recommendations.
+
 ```bash
-./mco review --repo . --prompt "Review for bugs." --providers claude,codex --json
+mco review \
+  --repo . \
+  --prompt "Review for security vulnerabilities and performance issues." \
+  --providers claude,codex,gemini,opencode,qwen \
+  --json
 ```
 
-Stdout-only result mode (for caller rendering, no `summary.md/decision.md/findings.json/run.json` write):
+### Run Mode
+
+General-purpose multi-agent execution. No forced output schema — providers complete the task freely.
+
 ```bash
-./mco review --repo . --prompt "Review for bugs." --providers claude,codex --result-mode stdout --json
+mco run \
+  --repo . \
+  --prompt "Summarize the architecture of this project." \
+  --providers claude,codex \
+  --json
 ```
 
-General run mode:
+### Result Modes
+
+| Mode | Behavior |
+|------|----------|
+| `--result-mode artifact` | Write artifact files, print summary (default) |
+| `--result-mode stdout` | Print full result to stdout, skip artifact files |
+| `--result-mode both` | Write artifacts and print full result |
+
+### Path Constraints
+
+Restrict which files agents can access:
+
 ```bash
-./mco run --repo . --prompt "Summarize the current repo architecture." --providers claude,codex --json
+mco run \
+  --repo . \
+  --prompt "Analyze the adapter layer." \
+  --providers claude,codex \
+  --allow-paths runtime,scripts \
+  --target-paths runtime/adapters \
+  --enforcement-mode strict
 ```
 
-Config file (JSON):
+## Configuration
+
+Create `mco.json` in your project root:
+
 ```json
 {
-  "providers": ["claude", "codex"],
+  "providers": ["claude", "codex", "qwen"],
   "artifact_base": "reports/review",
   "state_file": ".mco/state.json",
   "policy": {
-    "timeout_seconds": 180,
     "stall_timeout_seconds": 900,
-    "poll_interval_seconds": 1.0,
     "review_hard_timeout_seconds": 1800,
-    "enforce_findings_contract": false,
-    "max_retries": 1,
-    "high_escalation_threshold": 1,
-    "require_non_empty_findings": true,
     "max_provider_parallelism": 0,
-    "allow_paths": [".", "runtime", "scripts"],
     "enforcement_mode": "strict",
     "provider_permissions": {
-      "claude": {
-        "permission_mode": "plan"
-      },
-      "codex": {
-        "sandbox": "workspace-write"
-      }
-    },
-    "provider_timeouts": {
-      "claude": 300,
-      "codex": 240,
-      "qwen": 240
+      "claude": { "permission_mode": "plan" },
+      "codex": { "sandbox": "workspace-write" }
     }
   }
 }
 ```
 
-Run with config:
 ```bash
-./mco review --config ./mco.example.json --repo . --prompt "Review for bugs and security issues."
+mco review --config mco.json --repo . --prompt "Review for bugs."
 ```
 
-Override fan-out and per-provider timeout from CLI:
-```bash
-./mco review \
-  --repo . \
-  --prompt "Review for bugs and security issues." \
-  --providers claude,codex,gemini,opencode,qwen \
-  --strict-contract \
-  --max-provider-parallelism 2 \
-  --stall-timeout 900 \
-  --review-hard-timeout 1800 \
-  --provider-timeouts qwen=900,codex=900
+### Key Policy Fields
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `stall_timeout_seconds` | 900 | Cancel when no output progress for this duration |
+| `review_hard_timeout_seconds` | 1800 | Hard deadline for review mode (0 = disabled) |
+| `max_provider_parallelism` | 0 | 0 = full parallelism across all providers |
+| `enforcement_mode` | `strict` | `strict` fails closed on unmet permissions |
+| `provider_timeouts` | `{}` | Per-provider stall timeout overrides |
+
+All CLI flags override config file values. Run `mco review --help` for the full list.
+
+## How It Works
+
+```
+prompt ─> MCO ─┬─> Claude Code  ─┐
+               ├─> Codex CLI     ├─> aggregate ─> artifacts + JSON
+               ├─> Gemini CLI    │
+               ├─> OpenCode      │
+               └─> Qwen Code   ──┘
 ```
 
-Run mode with hard path constraints:
-```bash
-./mco run \
-  --repo . \
-  --prompt "Compare adapter behaviors and return a short markdown summary." \
-  --providers claude,codex \
-  --allow-paths runtime,scripts \
-  --target-paths runtime/adapters,runtime/review_engine.py \
-  --enforcement-mode strict \
-  --provider-permissions-json '{"codex":{"sandbox":"workspace-write"},"claude":{"permission_mode":"plan"}}' \
-  --json
+Each provider runs as an independent subprocess through a uniform adapter contract:
+
+1. **Detect** — check binary presence and auth status
+2. **Run** — spawn CLI process with prompt, capture stdout/stderr
+3. **Poll** — monitor process + output byte growth for progress detection
+4. **Cancel** — SIGTERM/SIGKILL on stall timeout or hard deadline
+5. **Normalize** — extract structured findings from raw output
+
+Execution model is **wait-all**: one provider's timeout or failure never stops others.
+
+## Artifacts
+
+Each run produces a structured artifact tree:
+
+```
+reports/review/<task_id>/
+  summary.md          # Human-readable summary
+  decision.md         # PASS / FAIL / ESCALATE / PARTIAL
+  findings.json       # Aggregated normalized findings (review mode)
+  run.json            # Machine-readable execution metadata
+  providers/          # Per-provider result JSON
+  raw/                # Raw stdout/stderr logs
 ```
 
-Artifacts are written to:
-- `<artifact_base>/<task_id>/summary.md`
-- `<artifact_base>/<task_id>/decision.md`
-- `<artifact_base>/<task_id>/findings.json`
-- `<artifact_base>/<task_id>/run.json`
-- `<artifact_base>/<task_id>/providers/*.json`
-- `<artifact_base>/<task_id>/raw/*.log`
+## License
 
-`run.json` includes audit fields for reproducibility:
-- `effective_cwd`
-- `allow_paths_hash`
-- `permissions_hash`
-
-Notes:
-- YAML config requires `pyyaml` installed; otherwise use JSON config.
-- Review prompt is wrapped with a JSON finding contract, but strict parse enforcement is optional.
-- Enable strict gate behavior with `--strict-contract` (or `policy.enforce_findings_contract=true` in config).
-- `run` mode does not force findings schema; it focuses on execution aggregation and provider success.
-- `result_mode=artifact` (default): write user-facing artifacts and print compact result.
-- `result_mode=stdout`: print provider-level result payload to stdout, skip user-facing artifact files.
-- `result_mode=both`: write artifacts and print provider-level payload.
-- Execution model is `wait-all`: one provider timeout/failure does not stop others.
-- Timeout behavior is progress-driven:
-  - `stall_timeout_seconds`: cancel only when output progress is idle beyond threshold.
-  - `review_hard_timeout_seconds`: hard deadline applied only in `review` mode.
-- `max_provider_parallelism=0` (or omitted) means full parallelism across selected providers.
-- `provider_timeouts` are provider-specific stall-timeout overrides.
-- `allow_paths` and `target_paths` are validated against `repo_root`; path escape is rejected.
-- `enforcement_mode=strict` (default) fails closed when provider permission requirements cannot be honored.
-
-## Step5 Benchmark Script
-Use this script to generate serial vs full-parallel evidence and write reports under `reports/adapter-contract/<date>/`:
-
-```bash
-./scripts/run_step5_parallel_benchmark.sh
-```
-
-The generated summary JSON includes separated parse-vs-findings metrics:
-- `providers_total`
-- `parse_success_rate`
-- `effective_findings_count`
-- `zero_finding_provider_count`
+UNLICENSED

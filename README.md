@@ -4,25 +4,69 @@
   <img src="./docs/assets/logos/mco-logo.svg" alt="MCO Logo" width="520" />
 </p>
 
+[![npm version](https://img.shields.io/npm/v/@tt-a1i/mco)](https://www.npmjs.com/package/@tt-a1i/mco)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Providers](https://img.shields.io/badge/providers-5%20built--in-green)]()
+
 **MCO — Orchestrate AI Coding Agents. Any Prompt. Any Agent. Any IDE.**
 
 English | [简体中文](./README.zh-CN.md)
 
+> AI coding agents are now standard tools for every developer. But one agent is just one perspective.
+>
+> MCO lets you work like a Tech Lead managing a team — dispatch tasks to Claude, Codex, Gemini, OpenCode, and Qwen simultaneously, run them in parallel, review their work, and synthesize consensus.
+>
+> One command. Five agents working at once.
+
 ## What is MCO
 
-MCO (Multi-CLI Orchestrator) is a neutral orchestration layer for AI coding agents. It dispatches prompts to multiple agent CLIs in parallel, aggregates results, and returns structured JSON. No vendor lock-in. No workflow rewrite.
+MCO (Multi-CLI Orchestrator) is a neutral orchestration layer for AI coding agents. It dispatches prompts to multiple agent CLIs in parallel, aggregates results, and returns structured output — JSON, SARIF, or PR-ready Markdown. No vendor lock-in. No workflow rewrite.
 
-MCO is designed to be called by an orchestrating agent — from Claude Code, Cursor, Trae, Copilot, Windsurf, or any AI-powered IDE. The calling agent organizes context, assigns tasks, and uses MCO to fan out work across multiple agents simultaneously. Agents can also orchestrate each other: Claude Code can dispatch tasks to Codex and Gemini via MCO, and vice versa.
+With the rise of agentic coding — led by projects like [OpenClaw](https://github.com/open-claw/open-claw) and the broad availability of Claude Code, Codex CLI, Gemini CLI, and more — every developer now has access to powerful AI agents. MCO takes the next step: instead of relying on a single agent, you orchestrate a team.
+
+MCO is designed to be called by any orchestrating agent or AI-powered IDE — Claude Code, Cursor, Trae, Copilot, Windsurf, or **OpenClaw**. The calling agent organizes context, assigns tasks, and uses MCO to fan out work across multiple agents simultaneously. For example, OpenClaw running on your machine can call `mco review` to dispatch code reviews to Claude, Codex, and Gemini in parallel — turning your local setup into a multi-agent review team with a single command. Agents can also orchestrate each other: Claude Code can dispatch tasks to Codex and Gemini via MCO, and vice versa.
+
+## One Agent is a Tool. Five Agents are a Team.
+
+No single AI model sees everything. Each model has its own training data, reasoning style, and blind spots. Using just one agent is like having a team of five engineers and only asking one for their opinion.
+
+**MCO turns this into a team workflow:**
+
+1. **Assign** — You give MCO a task and a list of agents. Like a Tech Lead assigning the same code review to five team members.
+2. **Execute in parallel** — All agents work simultaneously. Wall-clock time ≈ the slowest agent, not the sum.
+3. **Review and deduplicate** — MCO collects each agent's findings, deduplicates identical issues across agents, and tracks which agents found what (`detected_by`).
+4. **Synthesize consensus** — Optionally, one agent summarizes the combined results: what everyone agrees on, where they diverge, and what to do next.
+
+**In practice, different agents catch different things:**
+
+- One agent spots a race condition in your async code but overlooks an SQL injection in the ORM layer.
+- Another finds the injection immediately but misses the race condition entirely.
+- A third catches neither of those but flags a subtle memory leak in the resource cleanup path.
+
+These aren't hypothetical — different models genuinely have different strengths. Some are better at security analysis, some at logic flow, some at performance patterns. By running 3–5 agents in parallel on the same codebase, you get a **union of perspectives** rather than the intersection. The result is a more thorough review than any single agent could produce, regardless of which one you pick.
+
+This principle extends beyond code review:
+
+- **Architecture analysis** — different agents surface different design risks and trade-offs
+- **Bug hunting** — broader coverage across code paths and edge cases
+- **Refactoring assessment** — multiple perspectives on impact and safety of proposed changes
+
+The question isn't "which AI agent is best" — it's "why limit yourself to one?"
 
 ## Key Highlights
 
 - **Parallel fan-out** — dispatch to multiple agents simultaneously, wait-all semantics
 - **Any IDE, any agent** — works from Claude Code, Cursor, Trae, Copilot, Windsurf, or plain shell
 - **Agent-to-agent orchestration** — agents can dispatch tasks to other agents through MCO
-- **Progress-driven timeouts** — agents run freely until completion; cancel only when output goes idle
 - **Dual mode** — `mco review` for structured code review findings, `mco run` for general task execution
+- **Cross-agent deduplication** — identical findings from multiple agents are merged automatically with `detected_by` provenance
+- **LLM synthesis** — `--synthesize` runs an extra pass to produce consensus/divergence summary across all agents
+- **CI/CD integration** — `--format sarif` for GitHub Code Scanning, `--format markdown-pr` for PR comments
+- **Environment health check** — `mco doctor` probes binary presence, version, and auth status for all providers
+- **Token usage tracking** — `--include-token-usage` for best-effort per-agent and aggregate token consumption
+- **Progress-driven timeouts** — agents run freely until completion; cancel only when output goes idle
 - **Extensible adapter contract** — uniform interface for any CLI agent, not limited to built-in providers
-- **Machine-readable output** — JSON result payloads returned directly to stdout for downstream automation
+- **Machine-readable output** — JSON, SARIF, or Markdown output for downstream automation
 
 ## Built-in Providers
 
@@ -36,27 +80,23 @@ MCO is designed to be called by an orchestrating agent — from Claude Code, Cur
 
 The adapter architecture is extensible — adding a new agent CLI requires implementing three hooks: auth check, command builder, and output normalizer.
 
-## Why Multi-Agent?
+## Use Cases
 
-No single AI model sees everything. Each model has its own training data, reasoning style, and blind spots. When you run a code review with only one agent, you get one perspective — and whatever it misses, you miss.
+| Scenario | Command | What happens |
+|----------|---------|--------------|
+| PR code review | `mco review --format markdown-pr` | Multiple agents review in parallel, output a PR-ready comment |
+| Security scan in CI | `mco review --format sarif` | Results upload directly to GitHub Code Scanning |
+| Architecture analysis | `mco run --providers claude,gemini,qwen` | Multi-perspective architecture assessment |
+| Pre-deploy health check | `mco doctor --json` | Verify all agents are installed and authenticated |
+| Consensus decision | `mco review --synthesize` | Summarize what agents agree on and where they diverge |
 
-**Code review** is where this matters most. In practice:
+### Works with OpenClaw
 
-- One agent catches a race condition in your async code but overlooks an SQL injection in the ORM layer.
-- Another spots the injection immediately but misses the race condition entirely.
-- A third flags neither of those but finds a subtle memory leak in the resource cleanup path that the other two ignored.
+If you're running [OpenClaw](https://github.com/open-claw/open-claw) on your machine, it can use MCO as its multi-agent backbone. Just tell OpenClaw what you need:
 
-These aren't hypothetical — different models genuinely have different strengths. Some are better at security analysis, some at logic flow, some at performance patterns. By running 3-5 agents in parallel on the same codebase, you get a **union of perspectives** rather than the intersection. The result is a more thorough review than any single agent could produce, regardless of which one you pick.
+> "Use mco to run a security review on this repo with Claude, Codex, and Gemini. Synthesize the results."
 
-MCO makes this practical: one command, all agents run simultaneously, and results are aggregated into a single findings report. The overhead is near zero — the wall-clock time is roughly equal to the slowest agent, not the sum of all agents.
-
-This principle extends beyond code review:
-
-- **Architecture analysis** — different agents surface different design risks and trade-offs
-- **Bug hunting** — broader coverage across code paths and edge cases
-- **Refactoring assessment** — multiple perspectives on impact and safety of proposed changes
-
-The question isn't "which AI agent is best" — it's "why limit yourself to one?"
+OpenClaw reads `mco -h`, learns the CLI interface, and orchestrates the entire multi-agent workflow autonomously. Your local machine becomes a multi-agent review team — OpenClaw is the manager, MCO is the dispatcher, and Claude/Codex/Gemini/OpenCode/Qwen are the team members.
 
 ## Quick Start
 
@@ -119,6 +159,24 @@ mco run \
   --json
 ```
 
+### Doctor
+
+Check that your agents are installed, reachable, and authenticated before running tasks:
+
+```bash
+mco doctor
+mco doctor --json
+```
+
+### Output Formats (Review Mode)
+
+| Format | Flag | Use case |
+|--------|------|----------|
+| Human-readable report | `--format report` (default) | Terminal reading |
+| PR Markdown | `--format markdown-pr` | Post as GitHub PR comment |
+| SARIF 2.1.0 | `--format sarif` | Upload to GitHub Code Scanning |
+| Machine JSON | `--json` | Downstream automation |
+
 ### Result Modes
 
 | Mode | Behavior |
@@ -157,6 +215,10 @@ MCO is zero-config by default. You can run it directly with built-in defaults an
 | `--max-provider-parallelism` | `0` | `0` = full parallelism across selected providers |
 | `--enforcement-mode` | `strict` | `strict` fails closed on unmet permissions |
 | `--strict-contract` | off | Enforce strict findings JSON contract (review mode) |
+| `--format` | `report` | Output format: `report`, `markdown-pr`, `sarif` (review-only for last two) |
+| `--include-token-usage` | off | Best-effort per-provider and aggregate token usage |
+| `--synthesize` | off | Run extra LLM pass for consensus/divergence summary |
+| `--synth-provider` | `claude` | Which provider runs the synthesis pass |
 | `--provider-timeouts` | unset | Per-provider stall-timeout overrides (`provider=seconds`) |
 | `--provider-permissions-json` | unset | Provider permission mapping JSON (see below) |
 | `--save-artifacts` | off | Write artifacts while keeping stdout result delivery |
@@ -197,16 +259,21 @@ Run `mco review --help` for the full flag list.
 ## How It Works
 
 ```
-Cursor / Trae / Copilot / Claude Code / shell
-         │
-         ▼
-      mco run / mco review
-         │
-         ├─> Claude Code  ─┐
-         ├─> Codex CLI     ├─> aggregate ─> JSON (+ optional artifacts)
-         ├─> Gemini CLI    │
-         ├─> OpenCode      │
-         └─> Qwen Code   ──┘
+You (Tech Lead)
+     │
+     ▼
+  mco review / mco run
+     │
+     ├─→ Claude Code  ──┐
+     ├─→ Codex CLI      │
+     ├─→ Gemini CLI     ├─→ Deduplicate → Synthesize → Output
+     ├─→ OpenCode       │
+     └─→ Qwen Code   ───┘
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+                  JSON    SARIF    Markdown-PR
+               (stdout)  (CI/CD)  (PR comment)
 ```
 
 The calling agent (or user) invokes `mco` with a prompt and a list of providers. MCO fans out to all selected agents in parallel and waits for all to finish.

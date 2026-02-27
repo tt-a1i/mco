@@ -63,6 +63,111 @@ def _looks_like_nested_json_blob(value: str) -> bool:
     return False
 
 
+def _append_text_candidate(candidates: List[str], value: str) -> None:
+    normalized = value.strip()
+    if not normalized:
+        return
+    if normalized.startswith("```") and normalized.endswith("```"):
+        normalized = normalized.strip("`").strip()
+    if not normalized:
+        return
+    if candidates and candidates[-1] == normalized:
+        return
+    candidates.append(normalized)
+
+
+def _text_candidate_score(value: str) -> int:
+    normalized = value.strip()
+    if not normalized:
+        return -100
+
+    score = 0
+    length = len(normalized)
+    if length >= 24:
+        score += 1
+    if length >= 80:
+        score += 2
+    if " " in normalized or "\n" in normalized:
+        score += 1
+    if re.search(r"[.!?。；;:]", normalized):
+        score += 1
+    if normalized.startswith("<path>") or "<content>" in normalized:
+        score -= 3
+    if re.fullmatch(r"[A-Za-z0-9_./*:-]+", normalized) and length < 40:
+        score -= 3
+    if "\n" not in normalized and " " not in normalized and length < 24:
+        score -= 3
+    return score
+
+
+def _select_best_text_candidate(candidates: List[str]) -> str:
+    best_index = 0
+    best_score = _text_candidate_score(candidates[0])
+    for index, candidate in enumerate(candidates[1:], start=1):
+        score = _text_candidate_score(candidate)
+        if score > best_score or (score == best_score and index > best_index):
+            best_index = index
+            best_score = score
+    return candidates[best_index]
+
+
+def _collect_final_text_candidates(payload: Any, candidates: List[str]) -> None:
+    if isinstance(payload, dict):
+        payload_type = payload.get("type")
+        if isinstance(payload_type, str):
+            payload_type = payload_type.lower()
+            if payload_type == "text" and isinstance(payload.get("text"), str):
+                _append_text_candidate(candidates, payload.get("text", ""))
+            if payload_type in ("result", "final", "completion", "assistant", "message"):
+                for key in ("result", "final_text", "text", "content", "message", "response", "output"):
+                    value = payload.get(key)
+                    if isinstance(value, str):
+                        _append_text_candidate(candidates, value)
+
+        for key in ("final_text", "result", "text", "content", "message", "response", "output", "output_text"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                if _looks_like_nested_json_blob(value):
+                    for nested_payload in _decode_json_fragments(value):
+                        _collect_final_text_candidates(nested_payload, candidates)
+                else:
+                    _append_text_candidate(candidates, value)
+
+        for value in payload.values():
+            if isinstance(value, (dict, list)):
+                _collect_final_text_candidates(value, candidates)
+    elif isinstance(payload, list):
+        for item in payload:
+            if isinstance(item, (dict, list)):
+                _collect_final_text_candidates(item, candidates)
+            elif isinstance(item, str):
+                if _looks_like_nested_json_blob(item):
+                    for nested_payload in _decode_json_fragments(item):
+                        _collect_final_text_candidates(nested_payload, candidates)
+                else:
+                    _append_text_candidate(candidates, item)
+
+
+def extract_final_text_from_output(text: str) -> str:
+    """
+    Best-effort extraction of a user-facing final answer from provider output.
+    Falls back to trimmed raw text when no structured candidates are detected.
+    """
+    raw = text.strip()
+    if not raw:
+        return ""
+
+    payloads = extract_json_payloads(text)
+    if not payloads:
+        return raw
+
+    candidates: List[str] = []
+    for payload in payloads:
+        _collect_final_text_candidates(payload, candidates)
+
+    return _select_best_text_candidate(candidates) if candidates else raw
+
+
 def extract_json_payloads(text: str) -> List[Any]:
     payloads: List[Any] = []
     seen_signatures = set()

@@ -335,6 +335,31 @@ class ReviewEngineTests(unittest.TestCase):
             result = run_review(req, adapters={"qwen": adapter}, review_mode=False)
             details = result.provider_results["qwen"]
             self.assertEqual(details.get("output_text"), raw)
+            self.assertEqual(details.get("final_text"), raw)
+            self.assertEqual(details.get("response_ok"), True)
+            self.assertEqual(details.get("response_reason"), "raw_text")
+
+    def test_run_mode_extracts_final_text_from_event_stream(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw = (
+                '{"type":"thread.started"}\n'
+                '{"type":"assistant","message":{"content":[{"type":"text","text":"Interim chunk"}]}}\n'
+                '{"type":"result","result":"Final clean answer."}'
+            )
+            adapter = FakeAdapter("codex", raw)
+            req = ReviewRequest(
+                repo_root=tmpdir,
+                prompt="summarize",
+                providers=["codex"],  # type: ignore[list-item]
+                artifact_base=f"{tmpdir}/artifacts",
+                policy=ReviewPolicy(timeout_seconds=3, max_retries=0, require_non_empty_findings=False),
+            )
+            result = run_review(req, adapters={"codex": adapter}, review_mode=False)
+            details = result.provider_results["codex"]
+            self.assertEqual(details.get("output_text"), raw)
+            self.assertEqual(details.get("final_text"), "Final clean answer.")
+            self.assertEqual(details.get("response_ok"), True)
+            self.assertEqual(details.get("response_reason"), "extracted_final_text")
 
     def test_wait_all_keeps_fast_provider_when_other_times_out(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

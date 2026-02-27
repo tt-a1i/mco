@@ -9,6 +9,7 @@ from typing import Dict, List, Mapping
 from .adapters import ClaudeAdapter, CodexAdapter, GeminiAdapter, OpenCodeAdapter, QwenAdapter
 from .config import ReviewConfig, ReviewPolicy
 from .contracts import ProviderPresence
+from .formatters import format_markdown_pr
 from .review_engine import ReviewRequest, run_review
 
 SUPPORTED_PROVIDERS = ("claude", "codex", "gemini", "opencode", "qwen")
@@ -52,6 +53,7 @@ REVIEW_EPILOG = (
     "Examples:\n"
     "  mco review --repo . --prompt \"Review for bugs.\" --providers claude,codex\n"
     "  mco review --repo . --prompt \"Review for security issues.\" --providers claude,codex,qwen --json\n"
+    "  mco review --repo . --prompt \"Review for bugs.\" --providers claude,codex --format markdown-pr\n"
     "  mco review --repo . --prompt \"Review runtime/ only.\" --target-paths runtime --strict-contract\n\n"
     "Exit codes:\n"
     "  0 = success\n"
@@ -339,6 +341,12 @@ def _add_common_execution_args(parser: argparse.ArgumentParser) -> None:
         help="artifact: write files, stdout: print payload, both: do both",
     )
     output.add_argument(
+        "--format",
+        choices=("report", "markdown-pr"),
+        default="report",
+        help="Human-readable output format when --json is not set. markdown-pr is review-only",
+    )
+    output.add_argument(
         "--save-artifacts",
         action="store_true",
         help="Force artifact writes when result-mode is stdout",
@@ -488,6 +496,9 @@ def main(argv: List[str] | None = None) -> int:
         target_paths=[item.strip() for item in args.target_paths.split(",") if item.strip()],
     )
     review_mode = args.command == "review"
+    if args.format == "markdown-pr" and not review_mode:
+        print("--format markdown-pr is supported only for review command", file=sys.stderr)
+        return 2
     effective_result_mode = args.result_mode
     if args.save_artifacts and effective_result_mode == "stdout":
         effective_result_mode = "both"
@@ -516,15 +527,18 @@ def main(argv: List[str] | None = None) -> int:
         if args.json:
             print(json.dumps(payload, ensure_ascii=True))
         else:
-            print(
-                _render_user_readable_report(
-                    args.command,
-                    effective_result_mode,
-                    providers,
-                    payload,
-                    result.provider_results,
+            if args.format == "markdown-pr":
+                print(format_markdown_pr(payload, result.findings))
+            else:
+                print(
+                    _render_user_readable_report(
+                        args.command,
+                        effective_result_mode,
+                        providers,
+                        payload,
+                        result.provider_results,
+                    )
                 )
-            )
     else:
         detailed_payload = dict(payload)
         detailed_payload["result_mode"] = effective_result_mode
@@ -532,15 +546,18 @@ def main(argv: List[str] | None = None) -> int:
         if args.json:
             print(json.dumps(detailed_payload, ensure_ascii=True))
         else:
-            print(
-                _render_user_readable_report(
-                    args.command,
-                    effective_result_mode,
-                    providers,
-                    payload,
-                    result.provider_results,
+            if args.format == "markdown-pr":
+                print(format_markdown_pr(payload, result.findings))
+            else:
+                print(
+                    _render_user_readable_report(
+                        args.command,
+                        effective_result_mode,
+                        providers,
+                        payload,
+                        result.provider_results,
+                    )
                 )
-            )
 
     if result.decision == "FAIL":
         return 2

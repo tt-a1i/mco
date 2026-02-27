@@ -117,6 +117,7 @@ class CliTests(unittest.TestCase):
         args = parser.parse_args(["run", "--prompt", "x"])
         self.assertEqual(args.command, "run")
         self.assertEqual(args.result_mode, "stdout")
+        self.assertEqual(args.format, "report")
         self.assertFalse(args.save_artifacts)
 
     def test_parser_rejects_config_flag(self) -> None:
@@ -141,6 +142,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("Timeout and Parallelism:", help_text)
         self.assertIn("Access and Contracts:", help_text)
         self.assertIn("Examples:", help_text)
+        self.assertIn("--format markdown-pr", help_text)
         self.assertIn("Exit codes:", help_text)
         self.assertIn("INCONCLUSIVE", help_text)
         self.assertIn("(default: 900)", help_text)

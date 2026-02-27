@@ -5,7 +5,7 @@ import hashlib
 import json
 import tempfile
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Set, Tuple
 
@@ -52,6 +52,7 @@ class ReviewResult:
     parse_failure_count: int
     schema_valid_count: int
     dropped_findings_count: int
+    findings: List[Dict[str, object]] = field(default_factory=list)
 
 
 def _sha(value: str) -> str:
@@ -787,6 +788,7 @@ def run_review(
             parse_failure_count=parse_failure_count,
             schema_valid_count=schema_valid_count,
             dropped_findings_count=dropped_findings_count,
+            findings=findings_json,
         )
     finally:
         if temp_artifact_dir is not None:

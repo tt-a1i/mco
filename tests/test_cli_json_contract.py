@@ -230,6 +230,39 @@ class CliJsonContractTests(unittest.TestCase):
             self.assertEqual(mocked.call_args.kwargs.get("write_artifacts"), True)
             self.assertEqual(payload.get("result_mode"), "both")
 
+    def test_json_output_ignores_human_format_flag(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = ReviewResult(
+                task_id="task-review-json-format-1",
+                artifact_root=None,
+                decision="PASS",
+                terminal_state="COMPLETED",
+                provider_results={"codex": {"success": True}},
+                findings_count=0,
+                parse_success_count=0,
+                parse_failure_count=0,
+                schema_valid_count=0,
+                dropped_findings_count=0,
+            )
+            exit_code, payload = self._invoke_json(
+                [
+                    "review",
+                    "--repo",
+                    tmpdir,
+                    "--prompt",
+                    "review",
+                    "--providers",
+                    "codex",
+                    "--format",
+                    "markdown-pr",
+                    "--json",
+                ],
+                result,
+            )
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(payload["command"], "review")
+            self.assertEqual(tuple(payload.keys()), EXPECTED_DETAILED_JSON_KEYS)
+
 
 if __name__ == "__main__":
     unittest.main()

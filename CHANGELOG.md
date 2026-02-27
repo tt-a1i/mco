@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Added run-mode answer extraction fields per provider: `final_text`, `response_ok`, and `response_reason`, while keeping `output_text` as raw output for debugging.
 
 ## [0.3.1] - 2026-02-27
 ### Changed

@@ -91,7 +91,7 @@ def _render_user_readable_report(
         lines.append(
             f"- {provider}: success={success}, attempts={attempts}, final_error={final_error}, parse_reason={parse_reason}, findings={findings_count}"
         )
-        output_text = str(details.get("output_text", ""))
+        output_text = str(details.get("final_text", "")) or str(details.get("output_text", ""))
         if output_text:
             lines.append("  output:")
             for raw_line in output_text.splitlines():

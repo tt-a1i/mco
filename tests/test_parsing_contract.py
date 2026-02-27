@@ -2,10 +2,29 @@ from __future__ import annotations
 
 import unittest
 
-from runtime.adapters.parsing import inspect_contract_output
+from runtime.adapters.parsing import extract_final_text_from_output, inspect_contract_output
 
 
 class ParsingContractTests(unittest.TestCase):
+    def test_extract_final_text_from_plain_text(self) -> None:
+        text = "This is the final answer."
+        self.assertEqual(extract_final_text_from_output(text), text)
+
+    def test_extract_final_text_from_codex_like_event_stream(self) -> None:
+        text = (
+            '{"type":"thread.started"}\n'
+            '{"type":"assistant","message":{"content":[{"type":"text","text":"Interim"}]}}\n'
+            '{"type":"result","result":"Final concise answer."}'
+        )
+        self.assertEqual(extract_final_text_from_output(text), "Final concise answer.")
+
+    def test_extract_final_text_from_qwen_like_array_stream(self) -> None:
+        text = (
+            '[{"type":"assistant","message":{"content":[{"type":"text","text":"step-1"}]}},'
+            '{"type":"assistant","message":{"content":[{"type":"text","text":"最终回答"}]}}]'
+        )
+        self.assertEqual(extract_final_text_from_output(text), "最终回答")
+
     def test_contract_json_valid(self) -> None:
         text = '{"findings":[{"finding_id":"f1","severity":"low","category":"maintainability","title":"t","evidence":{"file":"a.py","line":1,"symbol":null,"snippet":"x"},"recommendation":"r","confidence":0.5,"fingerprint":"fp"}]}'
         info = inspect_contract_output(text)

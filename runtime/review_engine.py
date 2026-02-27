@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Set, Tuple
 
 from .adapters import ClaudeAdapter, CodexAdapter, GeminiAdapter, OpenCodeAdapter, QwenAdapter
-from .adapters.parsing import inspect_contract_output
+from .adapters.parsing import extract_final_text_from_output, inspect_contract_output
 from .artifacts import expected_paths, task_artifact_root
 from .config import ReviewPolicy
 from .contracts import Evidence, NormalizeContext, NormalizedFinding, ProviderAdapter, ProviderId, TaskInput
@@ -104,6 +104,16 @@ def _write_text(path: Path, content: str) -> None:
 
 def _output_text(stdout_text: str, stderr_text: str) -> str:
     return stdout_text if stdout_text.strip() else stderr_text
+
+
+def _response_quality(success: bool, output_text: str, final_text: str) -> Tuple[bool, str]:
+    if not success:
+        return (False, "provider_failed")
+    if not final_text.strip():
+        return (False, "empty_final_text")
+    if final_text.strip() == output_text.strip():
+        return (True, "raw_text")
+    return (True, "extracted_final_text")
 
 
 @dataclass(frozen=True)
@@ -382,11 +392,13 @@ def _run_provider(
                     raw_dir = Path(run_ref.artifact_path) / "raw"
                     timeout_stdout = _read_text(raw_dir / f"{provider}.stdout.log")
                     timeout_stderr = _read_text(raw_dir / f"{provider}.stderr.log")
+                    timeout_output_text = _output_text(timeout_stdout, timeout_stderr)
                     timeout_payload = {
                         "cancel_reason": cancel_reason,
                         "wall_clock_seconds": round(now - started, 3),
                         "last_progress_at": _timestamp_to_iso(last_progress_at),
-                        "output_text": _output_text(timeout_stdout, timeout_stderr),
+                        "output_text": timeout_output_text,
+                        "final_text": extract_final_text_from_output(timeout_output_text),
                         "parse_ok": False,
                         "parse_reason": "",
                         "schema_valid_count": 0,
@@ -473,6 +485,7 @@ def _run_provider(
                 "dropped_count": dropped_count,
                 "findings": [asdict(item) for item in findings],
             }
+            payload["final_text"] = extract_final_text_from_output(str(payload.get("output_text", "")))
             if success:
                 return AttemptResult(success=True, output=payload)
             if status.error_kind:
@@ -487,6 +500,9 @@ def _run_provider(
     provider_schema_valid = int(output.get("schema_valid_count", 0))
     provider_dropped = int(output.get("dropped_count", 0))
     findings = _deserialize_findings(output.get("findings"))
+    output_text = str(output.get("output_text", ""))
+    final_text = str(output.get("final_text", ""))
+    response_ok, response_reason = _response_quality(run_result.success, output_text, final_text)
 
     wall_clock_value = output.get("wall_clock_seconds")
     try:
@@ -501,7 +517,10 @@ def _run_provider(
         "cancel_reason": str(output.get("cancel_reason", "")),
         "wall_clock_seconds": wall_clock_seconds,
         "last_progress_at": str(output.get("last_progress_at", "")),
-        "output_text": str(output.get("output_text", "")),
+        "output_text": output_text,
+        "final_text": final_text,
+        "response_ok": response_ok,
+        "response_reason": response_reason,
         "parse_ok": parse_ok,
         "parse_reason": str(output.get("parse_reason", "")),
         "schema_valid_count": provider_schema_valid,

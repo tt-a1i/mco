@@ -1,20 +1,48 @@
-# MCO
+<h1 style="text-align:center;">MCO</h1>
 
-<p align="left">
-  <img src="./docs/assets/logos/mco-logo.svg" alt="MCO Logo" width="520" />
-</p>
+<div style="text-align:center;">
+  <img src="./docs/assets/logos/mco-logo-readme.svg" alt="MCO Logo" width="520" style="display:block;margin:0 auto;" />
+</div>
 
-[![npm version](https://img.shields.io/npm/v/@tt-a1i/mco)](https://www.npmjs.com/package/@tt-a1i/mco)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Providers](https://img.shields.io/badge/providers-5%20built--in-green)]()
+<div style="text-align:center;">
+  <img src="https://img.shields.io/npm/v/@tt-a1i/mco" alt="npm version" />&nbsp;
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />&nbsp;
+  <img src="https://img.shields.io/badge/providers-5%20built--in-green" alt="Providers: 5 built-in" />
+</div>
 
-**MCO — 编排 AI 编程 Agent。任意提示词，任意 Agent，任意 IDE。**
+<p align="center"><strong>MCO — 编排 AI 编程 Agent。任意提示词，任意 Agent，任意 IDE。</strong></p>
 
-[English](./README.md) | 简体中文
+<p align="center"><strong>MCO 为你的主 Agent 配备一支 Agent 团队：同时调度 Claude、Codex、Gemini、OpenCode、Qwen，并行执行任务、审查结果、汇总共识。</strong></p>
+
+<p align="center"><a href="./README.md">English</a> | 简体中文</p>
+
+<table align="center">
+  <tr>
+    <td align="center"><a href="https://github.com/anthropics/claude-code"><img src="https://github.com/anthropics.png?size=96" alt="Claude Code" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=96" alt="Gemini CLI" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/openai/codex"><img src="https://github.com/openai.png?size=96" alt="Codex CLI" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/sst/opencode"><img src="https://raw.githubusercontent.com/sst/opencode/master/packages/console/app/src/asset/brand/opencode-logo-light-square.svg" alt="OpenCode" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=96" alt="Qwen Code" width="48" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Claude Code</strong></td>
+    <td align="center"><strong>Gemini CLI</strong></td>
+    <td align="center"><strong>Codex CLI</strong></td>
+    <td align="center"><strong>OpenCode</strong></td>
+    <td align="center"><strong>Qwen Code</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><code>claude</code></td>
+    <td align="center"><code>gemini</code></td>
+    <td align="center"><code>codex</code></td>
+    <td align="center"><code>opencode</code></td>
+    <td align="center"><code>qwen</code></td>
+  </tr>
+</table>
 
 > AI 编程 Agent 已经是开发者的标配工具。但一个 Agent 只是一个视角。
 >
-> MCO 让你像 Tech Lead 管理团队一样 — 同时调度 Claude、Codex、Gemini、OpenCode、Qwen，并行执行、审查成果、汇总共识。
+> 像 Tech Lead 一样工作：把同一个任务分配给多个 Agent 并行执行，比较结果后再决策。
 >
 > 一条命令，五个 Agent 同时干活。
 

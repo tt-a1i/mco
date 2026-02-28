@@ -1,20 +1,48 @@
-# MCO
+<h1 style="text-align:center;">MCO</h1>
 
-<p align="left">
-  <img src="./docs/assets/logos/mco-logo.svg" alt="MCO Logo" width="520" />
-</p>
+<div style="text-align:center;">
+  <img src="./docs/assets/logos/mco-logo-readme.svg" alt="MCO Logo" width="520" style="display:block;margin:0 auto;" />
+</div>
 
-[![npm version](https://img.shields.io/npm/v/@tt-a1i/mco)](https://www.npmjs.com/package/@tt-a1i/mco)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Providers](https://img.shields.io/badge/providers-5%20built--in-green)]()
+<div style="text-align:center;">
+  <img src="https://img.shields.io/npm/v/@tt-a1i/mco" alt="npm version" />&nbsp;
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />&nbsp;
+  <img src="https://img.shields.io/badge/providers-5%20built--in-green" alt="Providers: 5 built-in" />
+</div>
 
-**MCO — Orchestrate AI Coding Agents. Any Prompt. Any Agent. Any IDE.**
+<p align="center"><strong>MCO — Orchestrate AI Coding Agents. Any Prompt. Any Agent. Any IDE.</strong></p>
 
-English | [简体中文](./README.zh-CN.md)
+<p align="center"><strong>MCO equips your primary agent with an agent team: dispatch Claude, Codex, Gemini, OpenCode, and Qwen in parallel to execute tasks, review outputs, and synthesize consensus.</strong></p>
+
+<p align="center">English | <a href="./README.zh-CN.md">简体中文</a></p>
+
+<table align="center">
+  <tr>
+    <td align="center"><a href="https://github.com/anthropics/claude-code"><img src="https://github.com/anthropics.png?size=96" alt="Claude Code" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=96" alt="Gemini CLI" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/openai/codex"><img src="https://github.com/openai.png?size=96" alt="Codex CLI" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/sst/opencode"><img src="https://raw.githubusercontent.com/sst/opencode/master/packages/console/app/src/asset/brand/opencode-logo-light-square.svg" alt="OpenCode" width="48" /></a></td>
+    <td align="center"><a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=96" alt="Qwen Code" width="48" /></a></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Claude Code</strong></td>
+    <td align="center"><strong>Gemini CLI</strong></td>
+    <td align="center"><strong>Codex CLI</strong></td>
+    <td align="center"><strong>OpenCode</strong></td>
+    <td align="center"><strong>Qwen Code</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><code>claude</code></td>
+    <td align="center"><code>gemini</code></td>
+    <td align="center"><code>codex</code></td>
+    <td align="center"><code>opencode</code></td>
+    <td align="center"><code>qwen</code></td>
+  </tr>
+</table>
 
 > AI coding agents are now standard tools for every developer. But one agent is just one perspective.
 >
-> MCO lets you work like a Tech Lead managing a team — dispatch tasks to Claude, Codex, Gemini, OpenCode, and Qwen simultaneously, run them in parallel, review their work, and synthesize consensus.
+> Work like a Tech Lead: assign one task to multiple agents, run in parallel, and compare outcomes before acting.
 >
 > One command. Five agents working at once.
 
